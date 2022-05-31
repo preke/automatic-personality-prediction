@@ -54,8 +54,6 @@ ALL_MODELS = sum((tuple(conf.pretrained_config_archive_map.keys()) for conf in (
 
 MODEL_CLASSES = {
     'bert': (BertConfig, BertForSequenceClassification, BertTokenizer),
-    'xlnet': (XLNetConfig, XLNetForSequenceClassification, XLNetTokenizer),
-    'xlm': (XLMConfig, XLMForSequenceClassification, XLMTokenizer),
     'roberta': (RobertaConfig, RobertaForSequenceClassification, RobertaTokenizer),
 }
 
@@ -155,26 +153,7 @@ def train(args, train_dataset, model, tokenizer):
                 model.zero_grad()
                 global_step += 1
 
-                # if args.local_rank in [-1, 0] and args.logging_steps > 0 and global_step % args.logging_steps == 0:
-                #     # Log metrics
-                #     if args.local_rank == -1 and args.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
-                #         results, better_on_eval = evaluate(args, model, tokenizer)
-                #         results_on_train, _ = evaluate(args, model, tokenizer, on_eval=False)
-                #         for key, value in results.items():
-                #             tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
-                #     tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-                #     tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
-                #     logging_loss = tr_loss
-
-                # if args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0 and better_on_eval:# xianzhez: add better
-                #     # Save model checkpoint
-                #     output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
-                #     if not os.path.exists(output_dir):
-                #         os.makedirs(output_dir)
-                #     model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
-                #     model_to_save.save_pretrained(output_dir)
-                #     torch.save(args, os.path.join(output_dir, 'training_args.bin'))
-                #     logger.info("Saving model checkpoint to %s", output_dir)
+                
 
             if args.max_steps > 0 and global_step > args.max_steps:
                 epoch_iterator.close()
@@ -549,22 +528,6 @@ def main():
             result = dict((k + '_{}'.format(global_step), v) for k, v in result.items())
             results.update(result)
 
-    # Evaluation on train
-    # results_train = {}
-    # if args.do_eval and args.local_rank in [-1, 0]:
-    #     tokenizer = tokenizer_class.from_pretrained(args.output_dir, do_lower_case=args.do_lower_case)
-    #     checkpoints = [args.output_dir]
-    #     if args.eval_all_checkpoints:
-    #         checkpoints = list(os.path.dirname(c) for c in sorted(glob.glob(args.output_dir + '/**/' + WEIGHTS_NAME, recursive=True)))
-    #         logging.getLogger("pytorch_transformers.modeling_utils").setLevel(logging.WARN)  # Reduce logging
-    #     logger.info("Evaluate the following checkpoints: %s", checkpoints)
-    #     for checkpoint in checkpoints:
-    #         global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
-    #         model = model_class.from_pretrained(checkpoint)
-    #         model.to(args.device)
-    #         result, _ = evaluate(args, model, tokenizer, prefix=global_step, on_eval=False)
-    #         # result = dict((k + '_{}'.format(global_step), v) for k, v in result.items())
-    #         # results.update(result)
 
     return results
 
@@ -588,14 +551,10 @@ if __name__ == "__main__":
         # ('xlnet', 'xlnet-large-cased')
         ]:
         if model == 'roberta':
-            os.environ["CUDA_VISIBLE_DEVICES"]='0,1,2,3'
+            os.environ["CUDA_VISIBLE_DEVICES"]='0,1'
         elif model == 'bert':
-            os.environ["CUDA_VISIBLE_DEVICES"]='0,1,2,3'
-        # elif model == 'xlnet':
-        #     os.environ["CUDA_VISIBLE_DEVICES"]='4,5,6,7'
+            os.environ["CUDA_VISIBLE_DEVICES"]='0,1'
 
-        # if model == 'xlnet':
-        #     time.sleep(60*20)
 
         for trait in [
             'cAGR', 
