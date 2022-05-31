@@ -28,7 +28,7 @@ import torch
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
                               TensorDataset)
 from torch.utils.data.distributed import DistributedSampler
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 from tqdm import tqdm, trange
 
 from pytorch_transformers import (WEIGHTS_NAME, BertConfig,
@@ -68,8 +68,8 @@ def set_seed(args):
 
 def train(args, train_dataset, model, tokenizer):
     """ Train the model """
-    if args.local_rank in [-1, 0]:
-        tb_writer = SummaryWriter()
+    # if args.local_rank in [-1, 0]:
+        # tb_writer = SummaryWriter()
 
     args.train_batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
     train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
@@ -166,10 +166,10 @@ def train(args, train_dataset, model, tokenizer):
             if args.local_rank == -1 and args.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
                 results, better_on_eval = evaluate(args, model, tokenizer)
                 results_on_train, _ = evaluate(args, model, tokenizer, on_eval=False)
-                for key, value in results.items():
-                    tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
-            tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-            tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
+                # for key, value in results.items():
+                    # tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
+            # tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
+            # tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
             logging_loss = tr_loss
 
         if args.local_rank in [-1, 0] and better_on_eval:# xianzhez: add better
@@ -190,8 +190,8 @@ def train(args, train_dataset, model, tokenizer):
             train_iterator.close()
             break
 
-    if args.local_rank in [-1, 0]:
-        tb_writer.close()
+    # if args.local_rank in [-1, 0]:
+        # tb_writer.close()
 
     return global_step, tr_loss / global_step
 
